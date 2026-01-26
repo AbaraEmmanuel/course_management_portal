@@ -44,6 +44,30 @@ document.addEventListener('DOMContentLoaded', function() {
     setupAssignmentEventListeners();
 });
 
+// Add this new function anywhere in your file (I recommend near the top with other utility functions)
+function handleLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        // Clear all authentication data
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        
+        // Reset global variables
+        authToken = null;
+        editingCourseId = null;
+        courseLessons = [];
+        courseQuizzes = [];
+        courseAssignments = [];
+        
+        // Show logout message
+        showMessage('Logged out successfully', 'success');
+        
+        // Redirect to login page after a brief delay
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 500);
+    }
+}
+
 function setupEventListeners() {
     // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -62,6 +86,12 @@ function setupEventListeners() {
             }
         });
     });
+
+    // Logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
 
     // Course type handler
     const courseTypeElement = document.getElementById('courseType');
