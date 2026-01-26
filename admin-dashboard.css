@@ -1245,17 +1245,23 @@ body {
         justify-content: center;
         flex-shrink: 0;
         min-width: 0;
+        margin-left: auto; /* Space between avatar and user info */
+        margin-right: 2rem;
+        /* REMOVE fixed max-width and flex: 1 */
+        width: auto; /* Let it size based on content */
     }
-    
+
     .user-name {
         font-weight: 600;
         color: #333;
         font-size: 0.85rem;
         line-height: 1.2;
         white-space: nowrap;
-        overflow: hidden;
+        /* overflow: hidden; */
         text-overflow: ellipsis;
-        max-width: 100%; /* Use full width of parent */
+        /* REMOVE max-width: Let it expand naturally */
+        width: auto; /* Size based on text content */
+        min-width: 0; /* Allow it to shrink if needed */
     }
     
     .user-role {
