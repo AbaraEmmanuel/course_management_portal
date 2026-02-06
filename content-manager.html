@@ -180,6 +180,27 @@
                             </select>
                         </div>
 
+                        <div class="form-group full-width" id="requiredLevelsGroup" style="display:none;">
+                            <label>Required User Levels (Check all that apply)</label>
+                            <div style="display: flex; gap: 20px; margin-top: 10px; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 15px; border: 2px solid #32cd32; border-radius: 8px; background: #f0f9f0;">
+                                    <input type="checkbox" name="requiredLevels" value="SPARK">
+                                    <span style="font-weight: 600; color: #32cd32;">⚡ SPARK</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 15px; border: 2px solid #667eea; border-radius: 8px; background: #f0f2ff;">
+                                    <input type="checkbox" name="requiredLevels" value="PRIME">
+                                    <span style="font-weight: 600; color: #667eea;">👑 PRIME 🔒</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 15px; border: 2px solid #c42e00; border-radius: 8px; background: #fff0ed;">
+                                    <input type="checkbox" name="requiredLevels" value="APEX">
+                                    <span style="font-weight: 600; color: #c42e00;">💎 APEX 🔒</span>
+                                </label>
+                            </div>
+                            <p style="color: #666; font-size: 13px; margin-top: 8px;">
+                                <i class="fas fa-info-circle"></i> Users must have one of the selected levels to access this course
+                            </p>
+                        </div>
+
                         <div class="form-group">
                             <label for="coursePrice">Price (if paid)</label>
                             <input type="number" id="coursePrice" min="0" placeholder="0" value="0">

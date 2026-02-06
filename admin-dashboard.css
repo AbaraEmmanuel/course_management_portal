@@ -1836,3 +1836,42 @@ body {
         margin-left: 0 !important;
     }
 }
+
+/* Course Badge Styles */
+.badge-spark {
+    background: linear-gradient(135deg, #32cd32, #28a428) !important;
+    color: white !important;
+}
+
+.badge-prime {
+    background: linear-gradient(135deg, #667eea, #764ba2) !important;
+    color: white !important;
+}
+
+.badge-apex {
+    background: linear-gradient(135deg, #c42e00, #9d2400) !important;
+    color: white !important;
+}
+
+.badge-free {
+    background: linear-gradient(135deg, #6b7280, #4b5563) !important;
+    color: white !important;
+}
+
+.badge-draft {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: white !important;
+}
+
+.course-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}

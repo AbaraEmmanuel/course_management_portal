@@ -8,13 +8,35 @@ let courseLessons = [];
 let courseQuizzes = [];
 let courseAssignments = [];
 
+// User levels configuration
+const USER_LEVELS = {
+    SPARK: { 
+        name: 'SPARK', 
+        label: 'SPARK',
+        priority: 1, 
+        color: '#32cd32',
+        icon: '⚡'
+    },
+    PRIME: { 
+        name: 'PRIME', 
+        label: 'PRIME 🔒',
+        priority: 2, 
+        color: '#667eea',
+        icon: '👑'
+    },
+    APEX: { 
+        name: 'APEX', 
+        label: 'APEX 🔒',
+        priority: 3, 
+        color: '#c42e00',
+        icon: '💎'
+    }
+};
+
 // Check authentication on page load
 if (!authToken) {
     window.location.href = 'index.html';
 }
-
-// Remove the problematic await fetch at the top - it causes syntax error
-// const response = await fetch(`${API_URL}/courses`, { ... }); // DELETE THIS LINE
 
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -44,7 +66,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setupAssignmentEventListeners();
 });
 
-// Add this new function anywhere in your file (I recommend near the top with other utility functions)
 function handleLogout() {
     if (confirm('Are you sure you want to logout?')) {
         // Clear all authentication data
@@ -107,6 +128,21 @@ function setupEventListeners() {
                 } else if (this.value === 'subject') {
                     classLevelGroup.style.display = 'none';
                     subjectGroup.style.display = 'block';
+                }
+            }
+        });
+    }
+
+    // Access level change handler - show/hide required levels
+    const accessLevel = document.getElementById('accessLevel');
+    if (accessLevel) {
+        accessLevel.addEventListener('change', function() {
+            const requiredLevelsGroup = document.getElementById('requiredLevelsGroup');
+            if (requiredLevelsGroup) {
+                if (this.value === 'premium') {
+                    requiredLevelsGroup.style.display = 'block';
+                } else {
+                    requiredLevelsGroup.style.display = 'none';
                 }
             }
         });
@@ -220,7 +256,6 @@ function setupEventListeners() {
 }
 
 function setupQuizEventListeners() {
-    // === QUIZ MANAGEMENT ===
     const addQuizBtn = document.getElementById('addQuizBtn');
     if (addQuizBtn) {
         addQuizBtn.addEventListener('click', () => {
@@ -318,7 +353,6 @@ function setupQuizEventListeners() {
 }
 
 function setupAssignmentEventListeners() {
-    // === ASSIGNMENT MANAGEMENT ===
     const addAssignmentBtn = document.getElementById('addAssignmentBtn');
     if (addAssignmentBtn) {
         addAssignmentBtn.addEventListener('click', () => {
@@ -397,7 +431,7 @@ function setupAssignmentEventListeners() {
     }
 }
 
-// Global functions that need to be accessible from HTML onclick
+// Global functions
 window.editLesson = function(index) {
     window.editingLessonIndex = index;
     const lesson = courseLessons[index];
@@ -572,7 +606,12 @@ window.deleteCourse = async function(courseId) {
     }
 };
 
-// Rest of your functions remain the same but need null checks...
+// Helper function to get selected required levels
+function getSelectedRequiredLevels() {
+    const checkboxes = document.querySelectorAll('input[name="requiredLevels"]:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
 function renderLessons() {
     const container = document.getElementById('lessonsContainer');
     if (!container) return;
@@ -843,6 +882,9 @@ function buildCourseData() {
     const price = (accessLevel && accessLevel.value === 'free') ? 0 : 
                  (coursePrice ? parseFloat(coursePrice.value) || 0 : 0);
     
+    // Get required levels if premium - THIS IS THE KEY PART
+    const requiredLevels = accessLevel?.value === 'premium' ? getSelectedRequiredLevels() : [];
+    
     return {
         title: document.getElementById('courseTitle')?.value || '',
         description: document.getElementById('courseDescription')?.value || '',
@@ -869,6 +911,8 @@ function buildCourseData() {
         language: document.getElementById('language')?.value || 'en',
         category: document.getElementById('category')?.value || 'general',
         tags: document.getElementById('tags')?.value.split(',').map(t => t.trim()).filter(Boolean) || [],
+        // THIS SENDS THE REQUIRED LEVELS TO YOUR BACKEND
+        requiredLevels: requiredLevels,
         metadata: {
             quizzes: courseQuizzes,
             assignments: courseAssignments,
@@ -910,37 +954,96 @@ function displayCourses(courses) {
     }
     
     container.innerHTML = courses.map(course => {
-        // FIX: Get the correct ID from _id.$oid or _id
         let courseId = '';
         
         if (course._id && course._id.$oid) {
-            courseId = course._id.$oid; // MongoDB ObjectId as string
+            courseId = course._id.$oid;
         } else if (course._id) {
-            courseId = course._id; // String ID
+            courseId = course._id;
         } else if (course.id && course.id.trim() !== '') {
-            courseId = course.id; // Only use if not empty
+            courseId = course.id;
         }
-        
-        console.log('Course ID for button:', { 
-            title: course.title, 
-            _id: course._id, 
-            id: course.id,
-            finalId: courseId 
-        });
         
         if (!courseId) {
             console.error('Course has no valid ID:', course);
             return '<div class="error-card">Error: Course missing ID</div>';
         }
         
+        // Get the highest required level for the top badge (APEX > PRIME > SPARK)
+        let topLevel = null;
+        if (course.requiredLevels && course.requiredLevels.length > 0) {
+            if (course.requiredLevels.includes('APEX')) {
+                topLevel = 'APEX';
+            } else if (course.requiredLevels.includes('PRIME')) {
+                topLevel = 'PRIME';
+            } else if (course.requiredLevels.includes('SPARK')) {
+                topLevel = 'SPARK';
+            }
+        }
+        
+        // Determine course badge based on required level
+        let courseBadgeClass = 'course-badge ';
+        let courseBadgeText = 'FREE';
+        let courseBadgeIcon = '';
+        
+        if (topLevel === 'APEX') {
+            courseBadgeClass += 'badge-apex';
+            courseBadgeText = 'APEX';
+            courseBadgeIcon = '💎';
+        } else if (topLevel === 'PRIME') {
+            courseBadgeClass += 'badge-prime';
+            courseBadgeText = 'PRIME';
+            courseBadgeIcon = '👑';
+        } else if (topLevel === 'SPARK') {
+            courseBadgeClass += 'badge-spark';
+            courseBadgeText = 'SPARK';
+            courseBadgeIcon = '⚡';
+        } else if (course.status === 'free') {
+            courseBadgeClass += 'badge-free';
+            courseBadgeText = 'FREE';
+        } else {
+            courseBadgeClass += 'badge-draft';
+            courseBadgeText = 'DRAFT';
+        }
+        
+        // Generate all level badges for display below
+        const levelBadges = (course.requiredLevels || [])
+            .map(level => {
+                const levelConfig = USER_LEVELS[level];
+                if (!levelConfig) return '';
+                
+                let badgeStyle = '';
+                if (level === 'SPARK') {
+                    badgeStyle = 'background: linear-gradient(135deg, #32cd32, #28a428); color: white;';
+                } else if (level === 'PRIME') {
+                    badgeStyle = 'background: linear-gradient(135deg, #667eea, #764ba2); color: white;';
+                } else if (level === 'APEX') {
+                    badgeStyle = 'background: linear-gradient(135deg, #c42e00, #9d2400); color: white;';
+                }
+                
+                return `
+                    <span class="level-badge" style="${badgeStyle} padding: 4px 10px; border-radius: 12px; font-size: 11px; margin-right: 4px; display: inline-block; margin-top: 4px;">
+                        ${levelConfig.icon} ${levelConfig.name}
+                    </span>
+                `;
+            }).join('');
+        
         return `
         <div class="course-card">
             <div class="course-card-image" style="background: ${course.imageUrl ? `url('${course.imageUrl}')` : 'linear-gradient(135deg, #667eea, #764ba2)'}; background-size: cover;">
-                <span class="course-badge ${course.status === 'free' ? 'badge-free' : 'badge-premium'}">${course.status || 'draft'}</span>
+                <span class="${courseBadgeClass}">${courseBadgeIcon} ${courseBadgeText}</span>
             </div>
             <div class="course-card-content">
                 <h3>${course.title || 'Untitled Course'}</h3>
                 <p>${(course.description || '').substring(0, 100)}...</p>
+                
+                ${levelBadges ? `
+                <div class="level-badges-container" style="margin: 8px 0;">
+                    <small style="color: #666; display: block; margin-bottom: 4px;">Required Levels:</small>
+                    ${levelBadges}
+                </div>
+                ` : ''}
+                
                 <div class="course-card-meta">
                     <span><i class="fas fa-book"></i> ${course.lessonCount || 0} lessons</span>
                     <span><i class="fas fa-users"></i> ${course.enrollmentCount || 0}</span>
@@ -992,7 +1095,6 @@ function populateFormWithCourse(course) {
     renderQuizzes();
     renderAssignments();
     
-    // Populate other fields
     const prerequisites = document.getElementById('prerequisites');
     const learningGoals = document.getElementById('learningGoals');
     const tags = document.getElementById('tags');
@@ -1015,10 +1117,22 @@ function populateFormWithCourse(course) {
     if (promoVideoUrl) promoVideoUrl.value = course.metadata?.promoVideoUrl || '';
     
     if (accessLevel) {
-        accessLevel.value = course.price === 0 ? 'free' : 'paid';
+        accessLevel.value = course.price === 0 ? 'free' : 'premium';
+        accessLevel.dispatchEvent(new Event('change'));
+        
         if (coursePrice && accessLevel.value === 'paid') {
             coursePrice.value = course.price || '';
         }
+    }
+    
+    // RESTORE THE LEVEL CHECKBOXES WHEN EDITING
+    if (course.requiredLevels && course.requiredLevels.length > 0) {
+        course.requiredLevels.forEach(level => {
+            const checkbox = document.querySelector(`input[name="requiredLevels"][value="${level}"]`);
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+        });
     }
     
     if (visibility) visibility.value = course.isActive ? 'published' : 'draft';
@@ -1075,11 +1189,15 @@ function resetForm() {
     const submitText = document.getElementById('submitText');
     if (submitText) submitText.textContent = 'Create Course';
     
-    // Reset course type display
     const courseType = document.getElementById('courseType');
     if (courseType) {
         courseType.dispatchEvent(new Event('change'));
     }
+    
+    // UNCHECK ALL LEVEL CHECKBOXES ON RESET
+    document.querySelectorAll('input[name="requiredLevels"]').forEach(cb => {
+        cb.checked = false;
+    });
 }
 
 function showMessage(text, type) {
