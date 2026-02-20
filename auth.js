@@ -1,5 +1,5 @@
 // auth.js - FINAL CORRECT VERSION
-const BACKEND_API_URL = 'https://jaromind-production-014b.up.railway.app';
+const BACKEND_API_URL = 'https://jaromind-production-3060.up.railway.app';
 
 export async function loginUser(email, password) {
   try {
