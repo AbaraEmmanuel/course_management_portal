@@ -1,5 +1,5 @@
 // At the top of content-manager.js
-const API_URL = 'https://jaromind-production-014b.up.railway.app'; // Your Go backend
+const API_URL = 'https://jaromind-production-3060.up.railway.app'; // Your Go backend
 let authToken = localStorage.getItem('authToken');
 let editingCourseId = null;
 
